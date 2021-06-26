@@ -103,5 +103,11 @@ trees
 # pycharm
 .idea
 
-#word2vec
+# word2vec
 sgns.zhihu.word  
+
+data
+JD_binary
+pretrained
+vocab
+snapshot

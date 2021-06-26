@@ -9,7 +9,7 @@ class TextCNN(nn.Module):
         self.args = args
 
         class_num = args.class_num
-        chanel_num = 1
+        channel_num = 1
         filter_num = args.filter_num
         filter_sizes = args.filter_sizes
 
@@ -20,11 +20,11 @@ class TextCNN(nn.Module):
             self.embedding = self.embedding.from_pretrained(args.vectors, freeze=not args.non_static)
         if args.multichannel:
             self.embedding2 = nn.Embedding(vocabulary_size, embedding_dimension).from_pretrained(args.vectors)
-            chanel_num += 1
+            channel_num += 1
         else:
             self.embedding2 = None
         self.convs = nn.ModuleList(
-            [nn.Conv2d(chanel_num, filter_num, (size, embedding_dimension)) for size in filter_sizes])
+            [nn.Conv2d(channel_num, filter_num, (size, embedding_dimension)) for size in filter_sizes])
         self.dropout = nn.Dropout(args.dropout)
         self.fc = nn.Linear(len(filter_sizes) * filter_num, class_num)
 

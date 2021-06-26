@@ -15,7 +15,6 @@ def train(train_iter, dev_iter, model, args):
     for epoch in range(1, args.epochs + 1):
         for batch in train_iter:
             feature, target = batch.text, batch.label
-            feature.data.t_(), target.data.sub_(1)
             if args.cuda:
                 feature, target = feature.cuda(), target.cuda()
             optimizer.zero_grad()
@@ -40,7 +39,7 @@ def train(train_iter, dev_iter, model, args):
                     last_step = steps
                     if args.save_best:
                         print('Saving best model, acc: {:.4f}%\n'.format(best_acc))
-                        save(model, args.save_dir, 'best', steps)
+                        save(model, args.name, 'best', steps)
                 else:
                     if steps - last_step >= args.early_stopping:
                         print('\nearly stop by {} steps, acc: {:.4f}%'.format(args.early_stopping, best_acc))
@@ -52,7 +51,6 @@ def eval(data_iter, model, args):
     corrects, avg_loss = 0, 0
     for batch in data_iter:
         feature, target = batch.text, batch.label
-        feature.data.t_(), target.data.sub_(1)
         if args.cuda:
             feature, target = feature.cuda(), target.cuda()
         logits = model(feature)
@@ -70,9 +68,9 @@ def eval(data_iter, model, args):
     return accuracy
 
 
-def save(model, save_dir, save_prefix, steps):
-    if not os.path.isdir(save_dir):
-        os.makedirs(save_dir)
+def save(model, name, save_prefix, steps):
+    save_dir = os.path.join("./snapshot", name)
+    os.makedirs(save_dir, exist_ok=True)
     save_prefix = os.path.join(save_dir, save_prefix)
     save_path = '{}_steps_{}.pt'.format(save_prefix, steps)
     torch.save(model.state_dict(), save_path)
