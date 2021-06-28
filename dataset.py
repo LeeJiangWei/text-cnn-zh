@@ -42,13 +42,13 @@ def get_jd_dataset(text_field, label_field):
 
 
 def get_jd_test(text_field, label_field):
-    text_field.tokenize = word_cut
+    # text_field.tokenize = word_cut
 
     test = data.TabularDataset.splits(
         path="./JD_binary",
         format="csv",
         skip_header=False,
-        test="test.csv",
+        test="tokenized_test.csv",
         fields=[
             ("label", label_field),
             ("text", text_field)
@@ -56,3 +56,23 @@ def get_jd_test(text_field, label_field):
     )
 
     return test
+
+
+def get_jd_dataset2(text_field, char_field, label_field):
+    char_field.tokenize = lambda x: [i for i in x]
+
+    train, dev, test = data.TabularDataset.splits(
+        path="./JD_binary",
+        format="csv",
+        skip_header=False,
+        train="tokenized_train2.csv",
+        validation="tokenized_dev2.csv",
+        test="tokenized_test2.csv",
+        fields=[
+            ("label", label_field),
+            ("text", text_field),
+            ("char", char_field)
+        ]
+    )
+
+    return train, dev, test
