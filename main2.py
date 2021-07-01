@@ -53,7 +53,7 @@ parser.add_argument('-device', type=int, default=0, help='device to use for iter
 
 # option
 parser.add_argument('-snapshot', type=str, default=None, help='filename of model snapshot [default: None]')
-parser.add_argument('-vocab', type=bool, default=False, help='whether to load vocab cache')
+parser.add_argument('-vocab', type=bool, default=True, help='whether to load vocab cache')
 parser.add_argument('-name', type=str, default="modified_all-zh", help='name of the model')
 args = parser.parse_args()
 
@@ -67,19 +67,21 @@ def load_dataset(text_field, char_field, label_field, args, **kwargs):
     print('Loading data...')
     train_dataset, dev_dataset, test_dataset = dataset.get_jd_dataset2(text_field, char_field, label_field)
 
-    if args.static and args.word_pretrained_name and args.char_pretrained_name and args.pretrained_path:
-        print("Loading pretrained vectors..")
-        word_vectors = load_word_vectors(args.word_pretrained_name, args.pretrained_path)
-        char_vectors = load_word_vectors(args.char_pretrained_name, args.pretrained_path)
-        print("Building vocabulary...")
-        text_field.build_vocab(train_dataset, dev_dataset, test_dataset, vectors=word_vectors)
-        char_field.build_vocab(train_dataset, dev_dataset, test_dataset, vectors=char_vectors)
-    else:
-        print("Building vocabulary...")
-        text_field.build_vocab(train_dataset, dev_dataset, test_dataset)
-        char_field.build_vocab(train_dataset, dev_dataset, test_dataset)
+    if not args.vocab:
+        if args.static and args.word_pretrained_name and args.char_pretrained_name and args.pretrained_path:
+            print("Loading pretrained vectors...")
+            word_vectors = load_word_vectors(args.word_pretrained_name, args.pretrained_path)
+            char_vectors = load_word_vectors(args.char_pretrained_name, args.pretrained_path)
+            print("Building vocabulary...")
+            text_field.build_vocab(train_dataset, dev_dataset, test_dataset, vectors=word_vectors)
+            char_field.build_vocab(train_dataset, dev_dataset, test_dataset, vectors=char_vectors)
+        else:
+            print("Building vocabulary...")
+            text_field.build_vocab(train_dataset, dev_dataset, test_dataset)
+            char_field.build_vocab(train_dataset, dev_dataset, test_dataset)
 
-    label_field.build_vocab(train_dataset, dev_dataset)
+        label_field.build_vocab(train_dataset, dev_dataset)
+
     train_iter, dev_iter, test_iter = data.BucketIterator.splits((train_dataset, dev_dataset, test_dataset),
                                                                  batch_size=args.batch_size,
                                                                  sort_key=lambda x: len(x.text),
